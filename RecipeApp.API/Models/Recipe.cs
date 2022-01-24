@@ -4,7 +4,7 @@
     {
         public int RecipeID { get; set; }
 
-        public string Title { get; set; }
+        public string RecipeName { get; set; }
 
         public string Ingredients { get; set; }
 

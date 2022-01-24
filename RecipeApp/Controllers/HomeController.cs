@@ -1,31 +1,70 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using RecipeApp.WebMVC.Services;
 using RecipeApp.WebMVC.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RecipeApp.WebMVC.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IRecipeService _recipeService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IRecipeService recipeService)
         {
-            _logger = logger;
+            _recipeService = recipeService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
+        {
+            var list = await _recipeService.GetRecipes();
+
+            // todo: add message for null
+
+            return View(list);
+        }
+
+        public IActionResult Add()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public async Task<IActionResult> Add(Recipe model)
         {
-            return View();
+            var created = await _recipeService.AddRecipe(model);
+
+            if(!created)
+            {
+                // todo: show error message
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            if (id <= 0)
+            {
+                // todo: show error message for bad request
+            }
+
+            var model = await _recipeService.GetRecipeById(id);
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Recipe model)
+        {
+            var updated = await _recipeService.UpdateRecipe(model);
+
+            if (!updated)
+            {
+                // todo: show error message
+            }
+
+            return RedirectToAction("Index");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

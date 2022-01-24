@@ -49,6 +49,7 @@ namespace RecipeApp.API.Services
             }
             catch (Exception ex)
             {
+                // todo: log exception
                 return null;
             }
 
@@ -72,22 +73,21 @@ namespace RecipeApp.API.Services
                     adapter.Fill(dataSet);
                     
                     var column = dataSet.Tables[0].Rows[0][0].ToString();
+
                     if (!string.IsNullOrEmpty(column))
                     {
                         model.RecipeID = id;
-                        model.Title = dataSet.Tables[0].Rows[0][1].ToString();
-                        model.Ingredients = dataSet.Tables[0].Rows[0][2].ToString();
-                        model.Instructions = dataSet.Tables[0].Rows[0][0].ToString();
+                        model.RecipeName = dataSet.Tables[0].Rows[0][0].ToString(); 
+                        model.Ingredients = dataSet.Tables[0].Rows[0][1].ToString();
+                        model.Instructions = dataSet.Tables[0].Rows[0][2].ToString();
                     }
                 }, TaskContinuationOptions.OnlyOnRanToCompletion);
             }
             catch (Exception ex)
             {
+                // todo: log exception
                 return null;
             }
-
-            if (model == null)
-                return null;
 
             return model;
         }
@@ -100,7 +100,7 @@ namespace RecipeApp.API.Services
                     var command = new SqlCommand("sp_InsertRecipe", _connection);
                     command.CommandType = CommandType.StoredProcedure;
 
-                    command.Parameters.Add(new SqlParameter("@Title", SqlDbType.VarChar, 100, "Title")).Value = model.Title;
+                    command.Parameters.Add(new SqlParameter("@RecipeName", SqlDbType.VarChar, 100, "RecipeName")).Value = model.RecipeName;
                     command.Parameters.Add(new SqlParameter("@Ingredients", SqlDbType.VarChar, 500, "Ingredients")).Value = model.Ingredients;
                     command.Parameters.Add(new SqlParameter("@Instructions", SqlDbType.VarChar, 8000, "Instructions")).Value = model.Instructions;
                     command.Parameters.Add("@RecipeID", SqlDbType.Int, 0, "RecipeID").Direction = ParameterDirection.Output;
@@ -111,6 +111,7 @@ namespace RecipeApp.API.Services
             }
             catch (Exception ex)
             {
+                // todo: log exception
                 return null;
             }
 
@@ -128,7 +129,7 @@ namespace RecipeApp.API.Services
                     command.CommandType = CommandType.StoredProcedure;
 
                     command.Parameters.Add(new SqlParameter("@RecipeID", SqlDbType.Int, 0, "RecipeID")).Value = model.RecipeID;
-                    command.Parameters.Add(new SqlParameter("@Title", SqlDbType.VarChar, 100, "Title")).Value = model.Title;
+                    command.Parameters.Add(new SqlParameter("@RecipeName", SqlDbType.VarChar, 100, "RecipeName")).Value = model.RecipeName;
                     command.Parameters.Add(new SqlParameter("@Ingredients", SqlDbType.VarChar, 500, "Ingredients")).Value = model.Ingredients;
                     command.Parameters.Add(new SqlParameter("@Instructions", SqlDbType.VarChar, 8000, "Instructions")).Value = model.Instructions;
                     result = command.ExecuteNonQuery();
@@ -136,7 +137,8 @@ namespace RecipeApp.API.Services
             }
             catch (Exception ex)
             {
-                throw;
+                // todo: log exception
+                return -1;
             }
 
             return result;
@@ -157,7 +159,8 @@ namespace RecipeApp.API.Services
             }
             catch (Exception ex)
             {
-                throw;
+                // todo: log exception
+                return -1;
             }
 
             return result;

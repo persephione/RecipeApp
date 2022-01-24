@@ -19,6 +19,16 @@ namespace RecipeApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
+                    .SetIsOriginAllowed((host) => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
+
             services.AddControllers(options => options.SuppressAsyncSuffixInActionNames = false);
             services.AddSingleton(Configuration);
             services.AddTransient<IRecipeService, RecipeService>();
@@ -35,6 +45,8 @@ namespace RecipeApp.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("CorsPolicy");
 
             app.UseAuthorization();
 

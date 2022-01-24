@@ -1,8 +1,120 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<RecipeApp.WebMVC.Models.IdValuePair>
+@{
+    ViewData["Title"] = "Recipe App";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <div class="card" style="width: 18rem; min-width: 250px; min-height:150px; margin:10px;">
+        <div class="card-body">
+            <h5 class="card-title">Add New Recipe</h5>
+            <a href="@(Url.Action("add"))" class="btn btn-success">Add</a>
+        </div>
+    </div>
+
+    @foreach (IdValuePair recipe in Model)
+    {
+        <div class="card" style="width: 18rem; min-width: 250px; min-height: 150px; margin: 10px;">
+            <div class="card-body">
+                <h5 class="card-title">@recipe.Value</h5>
+                <a href="#" class="btn btn-primary" onclick="viewRecipe(@recipe.Id)">View</a>
+                <a href="@(Url.Action("Edit", "Home", new { id = recipe.Id }))" class="btn btn-primary">Edit</a>
+                <a href="#" class="btn btn-primary" onclick="deleteRecipe(@recipe.Id)">Delete</a>
+            </div>
+        </div>
+    }
 </div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="recipeModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recipeName"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Ingredients</h5>
+                <p class="card-text" id="ingredients"></p><br />
+
+                <h5>Instructions</h5>
+                <p class="card-text" id="instructions"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation -->
+<div class="alert alert-info alert-dismissible fade show" role="alert" id="delete-confirmation">
+    <strong>Recipe has been successfully deleted!</strong>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<script>
+    // todo: move these endpoint strings to the controller
+    var getRecipeByIdEndpoint = 'https://localhost:44348/api/recipe/getrecipebyid';
+    var deleteRecipeEndpoint = 'https://localhost:44348/api/recipe/deleterecipe';
+
+    var recipe = {};
+
+    // call api to get recipe details
+    async function getRecipeByIdAsync(id) {
+        const response = await fetch(getRecipeByIdEndpoint +'?id=' + id);
+        recipe = await response.json();
+    }
+
+    // populate modal to view recipe details
+    function populateViewModal() {
+        document.getElementById('recipeName').innerHTML = recipe.recipeName;
+        document.getElementById('ingredients').innerHTML = recipe.ingredients;
+        document.getElementById('instructions').innerHTML = recipe.instructions;
+        $('#recipeModal').modal('show');
+    }
+
+    function viewRecipe(id) {
+        this.getRecipeByIdAsync(id).then(_ => {
+            this.populateViewModal();
+        })
+    }
+
+    // show alert to user to confirm deletion
+    function showDeleteConfirmation() {
+        $("#delete-confirmation").fadeTo(2000, 500).slideUp(500, function () {
+            $("#delete-confirmation").slideUp(500);
+
+            window.location.reload();
+        });
+    }
+
+    async function deleteRecipe(id) {
+         await fetch(deleteRecipeEndpoint + '?id=' + id, { method: 'DELETE' })
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson && await response.json();
+
+                // check for error response
+                if (!response.ok) {
+                    // get error message from body or default to response status
+                    const error = (data && data.message) || response.status;
+                    return Promise.reject(error);
+                }
+
+                showDeleteConfirmation();
+            })
+            .catch(error => {
+                element.parentElement.innerHTML = `Error: ${error}`;
+                console.error('There was an error!', error);
+                return false;
+            });
+    }
+
+    $(document).ready(function () {
+        $("#delete-confirmation").hide();
+    });
+</script>

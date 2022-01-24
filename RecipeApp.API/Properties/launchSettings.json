@@ -20,7 +20,7 @@
     "RecipeApp.API": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "weatherforecast",
+      "launchUrl": "recipeapp",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
